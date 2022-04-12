@@ -1,37 +1,28 @@
 #pragma once
 
-enum
+namespace DllInject
 {
-	EXE_ERR_DLL_PATH_ERROR = 10001,
-	EXE_ERR_UNSUPPORTED_ARCH,
-	EXE_ERR_VIRTUAL_ALLOC,
-	EXE_ERR_WRITE_PROC_MEM,
-	EXE_ERR_CREATE_REMOTE_THREAD,
-	EXE_ERR_FROZEN,
-	EXE_ERR_WAIT_FOR_THREAD,
-	EXE_ERR_READ_PROC_MEM,
+	constexpr ACCESS_MASK ProcessAccess = PROCESS_CREATE_THREAD | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE |
+		PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE;
 
-	INJ_ERR_BEFORE_RUN = 20001,
-	INJ_ERR_BEFORE_ENUM_IMPORTS,
-	INJ_ERR_ENUM_IMPORTS,
-	INJ_ERR_BEFORE_GETMODULEHANDLE,
-	INJ_ERR_GETMODULEHANDLE,
-	INJ_ERR_BEFORE_LOADLIBRARY,
-	INJ_ERR_LOADLIBRARY,
-	INJ_ERR_BEFORE_GETPROCADDR,
-	INJ_ERR_GETPROCADDR,
-	INJ_ERR_BEFORE_LIBINIT,
-	LIB_ERR_INIT_ALREADY_CALLED,
-	LIB_ERR_MINHOOK_FAILED,
-};
-
-typedef struct tagLOAD_LIBRARY_REMOTE_DATA {
-	union {
-		void* pVirtualFree;
-		DWORD64 dw64VirtualFree; // make sure 32-bit/64-bit layouts are the same
+	struct LOAD_LIBRARY_REMOTE_DATA {
+		// pVirtualFree must be first in the struct.
+		union {
+			void* pVirtualFree;
+			DWORD64 dw64VirtualFree; // make sure 32-bit/64-bit layouts are the same
+		};
+		INT32 nLogVerbosity;
+		BOOL bRunningFromAPC;
+		union {
+			HANDLE hSessionManagerProcess;
+			DWORD64 dw64SessionManagerProcess; // make sure 32-bit/64-bit layouts are the same
+		};
+		union {
+			HANDLE hSessionMutex;
+			DWORD64 dw64SessionMutex; // make sure 32-bit/64-bit layouts are the same
+		};
+		WCHAR szDllName[1]; // flexible array member
 	};
-	WCHAR szDllName[MAX_PATH];
-	DWORD dwError;
-} LOAD_LIBRARY_REMOTE_DATA;
 
-DWORD DllInject(HANDLE hProcess, HINSTANCE hDllInst, DWORD dwTimeout);
+	void DllInject(HANDLE hProcess, HANDLE hThreadForAPC, HANDLE hSessionManagerProcess, HANDLE hSessionMutex);
+}

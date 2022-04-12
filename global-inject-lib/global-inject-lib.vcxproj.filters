@@ -13,27 +13,39 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{dbc84a6d-1bd2-44c1-8485-a0ca8231f2c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.c">
+    <ClCompile Include="functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dll_inject.c">
+    <ClCompile Include="new_process_injector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="new_process_injector.c">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="all_processes_injector.c">
+    <ClCompile Include="logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="waiting_thread.c">
+    <ClCompile Include="dll_inject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="process_handler.c">
+    <ClCompile Include="customization_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wow64ext\wow64ext.cpp">
+    <ClCompile Include="all_processes_injector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\wow64ext\wow64ext.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="session_private_namespace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,19 +56,22 @@
     <ClInclude Include="new_process_injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="process_handler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="all_processes_injector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="waiting_thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wow64ext\wow64ext.h">
+    <ClInclude Include="functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="customization_session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="session_private_namespace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

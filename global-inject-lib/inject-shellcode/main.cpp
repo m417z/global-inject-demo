@@ -41,11 +41,16 @@
 
 // NOTE: module hashes are computed using all-caps unicode strings
 #define KERNEL32DLL_HASH                0x6A4ABC5B
+#define KERNEL32DLL_HASH_COUNT          8
 
 #define LOADLIBRARYW_HASH               0xEC0E4EA4
 #define GETPROCADDRESS_HASH             0x7C0DFCAA
 #define FREELIBRARY_HASH                0x4DC9D5A0
 #define VIRTUALFREE_HASH                0x030633AC
+#define GETLASTERROR_HASH               0x75DA1966
+#define OUTPUTDEBUGSTRINGA_HASH         0x470D22BC
+#define CLOSEHANDLE_HASH                0x0FFD97FB
+#define SETTHREADERRORMODE_HASH         0x5922C47C
 
 #define HASH_KEY						13
 //===============================================================================================//
@@ -187,21 +192,23 @@ typedef struct __PEB // 65 elements, 0x210 bytes
 __declspec(dllexport)
 BOOL __stdcall InjectShellcode(void* pParameter)
 {
-	LOAD_LIBRARY_REMOTE_DATA* pInjData = (LOAD_LIBRARY_REMOTE_DATA*)pParameter;
+	DllInject::LOAD_LIBRARY_REMOTE_DATA* pInjData = (DllInject::LOAD_LIBRARY_REMOTE_DATA*)pParameter;
 	HMODULE hModule;
 	char szInjectInit[] = { 'I', 'n', 'j', 'e', 'c', 't', 'I', 'n', 'i', 't', '\0' };
 	void* pInjectInit;
-
-	pInjData->dwError = INJ_ERR_BEFORE_ENUM_IMPORTS;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Based on code from ImprovedReflectiveDLLInjection
 
 	// the functions we need
-	void* pLoadLibraryW = NULL;
-	void* pGetProcAddress = NULL;
-	void* pFreeLibrary = NULL;
-	void* pVirtualFree = NULL;
+	decltype(&LoadLibraryW) pLoadLibraryW = NULL;
+	decltype(&GetProcAddress) pGetProcAddress = NULL;
+	decltype(&FreeLibrary) pFreeLibrary = NULL;
+	decltype(&VirtualFree) pVirtualFree = NULL;
+	decltype(&GetLastError) pGetLastError = NULL;
+	decltype(&OutputDebugStringA) pOutputDebugStringA = NULL;
+	decltype(&CloseHandle) pCloseHandle = NULL;
+	decltype(&SetThreadErrorMode) pSetThreadErrorMode = NULL;
 
 	USHORT usCounter;
 
@@ -285,7 +292,7 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 			// get total number of named exports
 			dwNumberOfNames = ((PIMAGE_EXPORT_DIRECTORY)uiExportDir)->NumberOfNames;
 
-			usCounter = 4;
+			usCounter = KERNEL32DLL_HASH_COUNT;
 
 			// loop while we still have imports to find
 			while (usCounter > 0 && dwNumberOfNames > 0)
@@ -294,7 +301,14 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 				dwHashValue = hash((char*)(uiBaseAddress + DEREF_32(uiNameArray)));
 
 				// if we have found a function we want we get its virtual address
-				if (dwHashValue == LOADLIBRARYW_HASH || dwHashValue == GETPROCADDRESS_HASH || dwHashValue == FREELIBRARY_HASH || dwHashValue == VIRTUALFREE_HASH)
+				if (dwHashValue == LOADLIBRARYW_HASH ||
+					dwHashValue == GETPROCADDRESS_HASH ||
+					dwHashValue == FREELIBRARY_HASH ||
+					dwHashValue == VIRTUALFREE_HASH ||
+					dwHashValue == GETLASTERROR_HASH ||
+					dwHashValue == OUTPUTDEBUGSTRINGA_HASH ||
+					dwHashValue == CLOSEHANDLE_HASH ||
+					dwHashValue == SETTHREADERRORMODE_HASH)
 				{
 					// get the VA for the array of addresses
 					uiAddressArray = (uiBaseAddress + ((PIMAGE_EXPORT_DIRECTORY)uiExportDir)->AddressOfFunctions);
@@ -304,13 +318,21 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 
 					// store this functions VA
 					if (dwHashValue == LOADLIBRARYW_HASH)
-						pLoadLibraryW = (void*)(uiBaseAddress + DEREF_32(uiAddressArray));
+						pLoadLibraryW = (decltype(pLoadLibraryW))(uiBaseAddress + DEREF_32(uiAddressArray));
 					else if (dwHashValue == GETPROCADDRESS_HASH)
-						pGetProcAddress = (void*)(uiBaseAddress + DEREF_32(uiAddressArray));
+						pGetProcAddress = (decltype(pGetProcAddress))(uiBaseAddress + DEREF_32(uiAddressArray));
 					else if (dwHashValue == FREELIBRARY_HASH)
-						pFreeLibrary = (void*)(uiBaseAddress + DEREF_32(uiAddressArray));
+						pFreeLibrary = (decltype(pFreeLibrary))(uiBaseAddress + DEREF_32(uiAddressArray));
 					else if (dwHashValue == VIRTUALFREE_HASH)
-						pVirtualFree = (void*)(uiBaseAddress + DEREF_32(uiAddressArray));
+						pVirtualFree = (decltype(pVirtualFree))(uiBaseAddress + DEREF_32(uiAddressArray));
+					else if (dwHashValue == GETLASTERROR_HASH)
+						pGetLastError = (decltype(pGetLastError))(uiBaseAddress + DEREF_32(uiAddressArray));
+					else if (dwHashValue == OUTPUTDEBUGSTRINGA_HASH)
+						pOutputDebugStringA = (decltype(pOutputDebugStringA))(uiBaseAddress + DEREF_32(uiAddressArray));
+					else if (dwHashValue == CLOSEHANDLE_HASH)
+						pCloseHandle = (decltype(pCloseHandle))(uiBaseAddress + DEREF_32(uiAddressArray));
+					else if (dwHashValue == SETTHREADERRORMODE_HASH)
+						pSetThreadErrorMode = (decltype(pSetThreadErrorMode))(uiBaseAddress + DEREF_32(uiAddressArray));
 
 					// decrement our counter
 					usCounter--;
@@ -328,7 +350,7 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 		}
 
 		// we stop searching when we have found everything we need.
-		if (pLoadLibraryW && pGetProcAddress && pFreeLibrary && pVirtualFree)
+		if (pLoadLibraryW && pGetProcAddress && pFreeLibrary && pVirtualFree && pGetLastError && pOutputDebugStringA && pCloseHandle && pSetThreadErrorMode)
 			break;
 
 		// get the next entry
@@ -337,37 +359,109 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 
 	pInjData->pVirtualFree = pVirtualFree;
 
-	if (!pLoadLibraryW || !pGetProcAddress || !pFreeLibrary || !pVirtualFree)
+	if (!pLoadLibraryW || !pGetProcAddress || !pFreeLibrary || !pVirtualFree || !pGetLastError || !pOutputDebugStringA || !pCloseHandle || !pSetThreadErrorMode)
 	{
-		pInjData->dwError = INJ_ERR_ENUM_IMPORTS;
-		return 1;
+		return FALSE;
 	}
 
-	pInjData->dwError = INJ_ERR_BEFORE_LOADLIBRARY;
+	INT32 nLogVerbosity = pInjData->nLogVerbosity;
+	BOOL bInitAttempted = FALSE;
+	BOOL bInitSucceeded = FALSE;
+	DWORD dwLastErrorValue = 0;
+	DWORD dwOldMode;
 
-	hModule = ((HMODULE(WINAPI*)(LPCTSTR))pLoadLibraryW)(pInjData->szDllName);
+	// Prevent the system from displaying the critical-error-handler message box.
+	// A message box like this was appearing while trying to load a dll in a
+	// process with the ProcessSignaturePolicy mitigation, and it looked like this:
+	// https://stackoverflow.com/q/38367847
+	pSetThreadErrorMode(SEM_FAILCRITICALERRORS, &dwOldMode);
+
+	if (nLogVerbosity >= 2)
+	{
+		char szLoadLibraryMessage[] = { '[', 'W', 'H', ']', ' ', 'L', 'L', '\n', '\0' };
+		pOutputDebugStringA(szLoadLibraryMessage);
+	}
+
+	hModule = pLoadLibraryW(pInjData->szDllName);
 	if (hModule)
 	{
-		pInjData->dwError = INJ_ERR_BEFORE_GETPROCADDR;
+		if (nLogVerbosity >= 2)
+		{
+			char szGetProcAddressMessage[] = { '[', 'W', 'H', ']', ' ', 'G', 'P', 'A', '\n', '\0' };
+			pOutputDebugStringA(szGetProcAddressMessage);
+		}
 
-		pInjectInit = ((FARPROC(WINAPI*)(HMODULE, LPCSTR))pGetProcAddress)(hModule, szInjectInit);
+		pInjectInit = pGetProcAddress(hModule, szInjectInit);
 		if (pInjectInit)
 		{
-			pInjData->dwError = INJ_ERR_BEFORE_LIBINIT;
+			if (nLogVerbosity >= 2)
+			{
+				char szInjectInitMessage[] = { '[', 'W', 'H', ']', ' ', 'I', 'I', '\n', '\0' };
+				pOutputDebugStringA(szInjectInitMessage);
+			}
 
-			pInjData->dwError = ((DWORD(__stdcall*)(void))pInjectInit)();
-			if (pInjData->dwError == 0)
-				return 0;
+			bInitAttempted = TRUE;
+			bInitSucceeded = ((BOOL(*)(BOOL, HANDLE, HANDLE))pInjectInit)(
+				pInjData->bRunningFromAPC, (HANDLE)pInjData->hSessionManagerProcess, (HANDLE)pInjData->hSessionMutex);
+
+			if (nLogVerbosity >= 2)
+			{
+				char szInjectInitResultMessage[] = { '[', 'W', 'H', ']', ' ', 'I', 'I', ':', ' ', bInitSucceeded ? '1' : '0', '\n', '\0'};
+				pOutputDebugStringA(szInjectInitResultMessage);
+			}
 		}
 		else
-			pInjData->dwError = INJ_ERR_GETPROCADDR;
+		{
+			dwLastErrorValue = pGetLastError();
+		}
 
-		((BOOL(WINAPI*)(HMODULE))pFreeLibrary)(hModule);
+		pFreeLibrary(hModule);
 	}
 	else
-		pInjData->dwError = INJ_ERR_LOADLIBRARY;
+	{
+		dwLastErrorValue = pGetLastError();
+	}
 
-	return 1;
+	if (!bInitSucceeded)
+	{
+		if (pInjData->hSessionMutex)
+		{
+			pCloseHandle(pInjData->hSessionMutex);
+		}
+
+		pCloseHandle(pInjData->hSessionManagerProcess);
+
+		if (!bInitAttempted && nLogVerbosity >= 1)
+		{
+			char szLastErrorMessage[] = { '[', 'W', 'H', ']', ' ', 'E', 'R', 'R', ':', ' ', '1', '1', '1', '1', '1', '1', '1', '1', '\n', '\0' };
+			char *pHex = szLastErrorMessage + sizeof(szLastErrorMessage) - 2;
+
+			for (int i = 0; i < 8; i++)
+			{
+				int digit = dwLastErrorValue & 0x0F;
+				char letter;
+				if (digit < 0x0A)
+				{
+					letter = digit + '0';
+				}
+				else
+				{
+					letter = digit - 0x0A + 'A';
+				}
+
+				pHex--;
+				*pHex = letter;
+
+				dwLastErrorValue >>= 4;
+			}
+
+			pOutputDebugStringA(szLastErrorMessage);
+		}
+	}
+
+	pSetThreadErrorMode(dwOldMode, NULL);
+
+	return bInitSucceeded;
 }
 
 int CALLBACK wWinMain(
@@ -377,6 +471,6 @@ int CALLBACK wWinMain(
 	_In_ int       nCmdShow
 )
 {
-	InjectShellcode((void*)0x1234);
+	InjectShellcode((void*)sizeof(DllInject::LOAD_LIBRARY_REMOTE_DATA));
 	return 0;
 }

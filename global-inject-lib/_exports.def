@@ -1,0 +1,6 @@
+LIBRARY "global-inject-lib.dll"
+EXPORTS
+	InjectInit
+	GlobalHookSessionStart
+	GlobalHookSessionHandleNewProcesses
+	GlobalHookSessionEnd

@@ -1,12 +1,10 @@
 #pragma once
 
-//#define LOG(message, ...) ((void)0)
+namespace Logger
+{
+	void VLogLine(PCWSTR format, va_list args);
+	void LogLine(PCWSTR format, ...);
+}
 
-#define LOG(message, ...) \
-	do \
-	{ \
-		WCHAR szBuffer[1025]; \
-		wsprintf(szBuffer, L"[GLOBAL-INJECT-LOG] " message L"\n", __VA_ARGS__); \
-		OutputDebugString(szBuffer); \
-	} \
-	while(0)
+#define LOG(message, ...)     Logger::LogLine(L"[GLOBAL-INJECT-LOG]     [%S]: " message L"\n", __FUNCTION__, __VA_ARGS__)
+#define VERBOSE(message, ...) Logger::LogLine(L"[GLOBAL-INJECT-VERBOSE] [%S]: " message L"\n", __FUNCTION__, __VA_ARGS__)

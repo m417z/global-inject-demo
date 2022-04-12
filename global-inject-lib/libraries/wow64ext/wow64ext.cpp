@@ -250,108 +250,6 @@ typedef _PEB_LDR_DATA_T<DWORD64> PEB_LDR_DATA64;
 typedef _PEB_T<DWORD, DWORD64, 34> PEB32;
 typedef _PEB_T<DWORD64, DWORD, 30> PEB64;
 
-struct _XSAVE_FORMAT64
-{
-    WORD ControlWord;
-    WORD StatusWord;
-    BYTE TagWord;
-    BYTE Reserved1;
-    WORD ErrorOpcode;
-    DWORD ErrorOffset;
-    WORD ErrorSelector;
-    WORD Reserved2;
-    DWORD DataOffset;
-    WORD DataSelector;
-    WORD Reserved3;
-    DWORD MxCsr;
-    DWORD MxCsr_Mask;
-    _M128A FloatRegisters[8];
-    _M128A XmmRegisters[16];
-    BYTE Reserved4[96];
-};
-
-struct _CONTEXT64
-{
-    DWORD64 P1Home;
-    DWORD64 P2Home;
-    DWORD64 P3Home;
-    DWORD64 P4Home;
-    DWORD64 P5Home;
-    DWORD64 P6Home;
-    DWORD ContextFlags;
-    DWORD MxCsr;
-    WORD SegCs;
-    WORD SegDs;
-    WORD SegEs;
-    WORD SegFs;
-    WORD SegGs;
-    WORD SegSs;
-    DWORD EFlags;
-    DWORD64 Dr0;
-    DWORD64 Dr1;
-    DWORD64 Dr2;
-    DWORD64 Dr3;
-    DWORD64 Dr6;
-    DWORD64 Dr7;
-    DWORD64 Rax;
-    DWORD64 Rcx;
-    DWORD64 Rdx;
-    DWORD64 Rbx;
-    DWORD64 Rsp;
-    DWORD64 Rbp;
-    DWORD64 Rsi;
-    DWORD64 Rdi;
-    DWORD64 R8;
-    DWORD64 R9;
-    DWORD64 R10;
-    DWORD64 R11;
-    DWORD64 R12;
-    DWORD64 R13;
-    DWORD64 R14;
-    DWORD64 R15;
-    DWORD64 Rip;
-    _XSAVE_FORMAT64 FltSave;
-    _M128A Header[2];
-    _M128A Legacy[8];
-    _M128A Xmm0;
-    _M128A Xmm1;
-    _M128A Xmm2;
-    _M128A Xmm3;
-    _M128A Xmm4;
-    _M128A Xmm5;
-    _M128A Xmm6;
-    _M128A Xmm7;
-    _M128A Xmm8;
-    _M128A Xmm9;
-    _M128A Xmm10;
-    _M128A Xmm11;
-    _M128A Xmm12;
-    _M128A Xmm13;
-    _M128A Xmm14;
-    _M128A Xmm15;
-    _M128A VectorRegister[26];
-    DWORD64 VectorControl;
-    DWORD64 DebugControl;
-    DWORD64 LastBranchToRip;
-    DWORD64 LastBranchFromRip;
-    DWORD64 LastExceptionToRip;
-    DWORD64 LastExceptionFromRip;
-};
-
-// Below defines for .ContextFlags field are taken from WinNT.h
-#ifndef CONTEXT_AMD64
-#define CONTEXT_AMD64 0x100000
-#endif
-
-#define CONTEXT64_CONTROL (CONTEXT_AMD64 | 0x1L)
-#define CONTEXT64_INTEGER (CONTEXT_AMD64 | 0x2L)
-#define CONTEXT64_SEGMENTS (CONTEXT_AMD64 | 0x4L)
-#define CONTEXT64_FLOATING_POINT  (CONTEXT_AMD64 | 0x8L)
-#define CONTEXT64_DEBUG_REGISTERS (CONTEXT_AMD64 | 0x10L)
-#define CONTEXT64_FULL (CONTEXT64_CONTROL | CONTEXT64_INTEGER | CONTEXT64_FLOATING_POINT)
-#define CONTEXT64_ALL (CONTEXT64_CONTROL | CONTEXT64_INTEGER | CONTEXT64_SEGMENTS | CONTEXT64_FLOATING_POINT | CONTEXT64_DEBUG_REGISTERS)
-#define CONTEXT64_XSTATE (CONTEXT_AMD64 | 0x20L)
-
 #pragma pack(pop)
 
 static HANDLE g_heap;
@@ -1017,6 +915,34 @@ BOOL __cdecl CloseHandle64(DWORD64 Handle)
     }
 
     DWORD64 ret = X64Call(nrvm, 1, Handle);
+    if (STATUS_SUCCESS != ret)
+    {
+        SetLastErrorFromX64Call(ret);
+        return FALSE;
+    }
+    else
+    {
+        return TRUE;
+    }
+}
+
+BOOL __cdecl MyNtQueueApcThread64(DWORD64 ThreadHandle, DWORD64 ApcDispatchRoutine, DWORD64 SystemArgument1, DWORD64 SystemArgument2, DWORD64 SystemArgument3)
+{
+    static DWORD64 nrvm = 0;
+    if (0 == nrvm)
+    {
+        nrvm = GetProcAddress64(getNTDLL64(), "NtQueueApcThread");
+        if (0 == nrvm)
+            return 0;
+    }
+
+    DWORD64 ret = X64Call(nrvm, 5,
+        ThreadHandle,
+        ApcDispatchRoutine,
+        SystemArgument1,
+        SystemArgument2,
+        SystemArgument3
+    );
     if (STATUS_SUCCESS != ret)
     {
         SetLastErrorFromX64Call(ret);
