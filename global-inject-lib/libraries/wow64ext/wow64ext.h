@@ -130,6 +130,10 @@ struct _CONTEXT64
 
 #pragma pack(pop)
 
+// Without the double casting, the pointer is sign extended, not zero extended,
+// which leads to invalid addresses with /LARGEADDRESSAWARE.
+#define PTR_TO_DWORD64(p) ((DWORD64)(ULONG_PTR)(p))
+
 #ifdef __cplusplus
 extern "C" {
 #endif

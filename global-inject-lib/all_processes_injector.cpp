@@ -31,7 +31,7 @@ AllProcessesInjector::AllProcessesInjector()
 	GetNativeSystemInfo(&siSystemInfo);
 	if (siSystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) {
 		// 32-bit machine.
-		pRtlUserThreadStart = (DWORD64)GetProcAddress(hNtdll, "RtlUserThreadStart");
+		pRtlUserThreadStart = PTR_TO_DWORD64(GetProcAddress(hNtdll, "RtlUserThreadStart"));
 	}
 	else {
 		DWORD64 hNtdll64 = GetModuleHandle64(L"ntdll.dll");
@@ -39,7 +39,7 @@ AllProcessesInjector::AllProcessesInjector()
 			THROW_WIN32(ERROR_MOD_NOT_FOUND);
 		}
 
-		pRtlUserThreadStart = (DWORD64)GetProcAddress64(hNtdll64, "RtlUserThreadStart");
+		pRtlUserThreadStart = GetProcAddress64(hNtdll64, "RtlUserThreadStart");
 	}
 #endif // _WIN64
 	THROW_LAST_ERROR_IF(pRtlUserThreadStart == 0);

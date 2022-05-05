@@ -182,7 +182,7 @@ namespace
 		if (targetProcessArch == IMAGE_FILE_MACHINE_AMD64) {
 			// WOW64 to x64 native, use heaven's gate.
 			return (HANDLE)MyCreateRemoteThread64(
-				(DWORD64)hProcess, (DWORD64)lpStartAddress, (DWORD64)lpParameter);
+				PTR_TO_DWORD64(hProcess), PTR_TO_DWORD64(lpStartAddress), PTR_TO_DWORD64(lpParameter));
 		}
 #endif // _WIN64
 
@@ -268,7 +268,7 @@ namespace
 			// [...] STATUS_INVALID_HANDLE"
 			// https://repnz.github.io/posts/apc/wow64-user-apc/
 			return MyNtQueueApcThread64(
-				(DWORD64)hThread, (DWORD64)pfnAPC, (DWORD64)dwData, 0, 0);
+				PTR_TO_DWORD64(hThread), PTR_TO_DWORD64(pfnAPC), (DWORD64)dwData, 0, 0);
 		}
 #endif // _WIN64
 
