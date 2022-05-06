@@ -560,11 +560,7 @@ DWORD64 __cdecl GetModuleHandle64(wchar_t* lpModuleName)
 
 static DWORD64 getNTDLL64()
 {
-    static DWORD64 ntdll64 = 0;
-    if (0 != ntdll64)
-        return ntdll64;
-
-    ntdll64 = GetModuleHandle64(L"ntdll.dll");
+    static DWORD64 ntdll64 = GetModuleHandle64(L"ntdll.dll");
     return ntdll64;
 }
 
@@ -622,15 +618,9 @@ VOID __cdecl SetLastErrorFromX64Call(DWORD64 status)
     typedef ULONG (WINAPI *RtlNtStatusToDosError_t)(NTSTATUS Status);
     typedef ULONG (WINAPI *RtlSetLastWin32Error_t)(NTSTATUS Status);
 
-    static RtlNtStatusToDosError_t RtlNtStatusToDosError = nullptr;
-    static RtlSetLastWin32Error_t RtlSetLastWin32Error = nullptr;
-
-    if ((nullptr == RtlNtStatusToDosError) || (nullptr == RtlSetLastWin32Error))
-    {
-        HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
-        RtlNtStatusToDosError = (RtlNtStatusToDosError_t)GetProcAddress(ntdll, "RtlNtStatusToDosError");
-        RtlSetLastWin32Error = (RtlSetLastWin32Error_t)GetProcAddress(ntdll, "RtlSetLastWin32Error");
-    }
+    static HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+    static RtlNtStatusToDosError_t RtlNtStatusToDosError = (RtlNtStatusToDosError_t)GetProcAddress(ntdll, "RtlNtStatusToDosError");
+    static RtlSetLastWin32Error_t RtlSetLastWin32Error = (RtlSetLastWin32Error_t)GetProcAddress(ntdll, "RtlSetLastWin32Error");
 
     if ((nullptr != RtlNtStatusToDosError) && (nullptr != RtlSetLastWin32Error))
     {
@@ -640,13 +630,9 @@ VOID __cdecl SetLastErrorFromX64Call(DWORD64 status)
 
 DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, char* funcName)
 {
-    static DWORD64 _LdrGetProcedureAddress = 0;
+    static DWORD64 _LdrGetProcedureAddress = getLdrGetProcedureAddress();
     if (0 == _LdrGetProcedureAddress)
-    {
-        _LdrGetProcedureAddress = getLdrGetProcedureAddress();
-        if (0 == _LdrGetProcedureAddress)
-            return 0;
-    }
+        return 0;
 
     _UNICODE_STRING_T<DWORD64> fName = { 0 };
     fName.Buffer = PTR_TO_DWORD64(funcName);
@@ -659,13 +645,10 @@ DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, char* funcName)
 
 SIZE_T __cdecl VirtualQueryEx64(HANDLE hProcess, DWORD64 lpAddress, MEMORY_BASIC_INFORMATION64* lpBuffer, SIZE_T dwLength)
 {
-    static DWORD64 ntqvm = 0;
+    static DWORD64 ntqvm = GetProcAddress64(getNTDLL64(), "NtQueryVirtualMemory");
     if (0 == ntqvm)
-    {
-        ntqvm = GetProcAddress64(getNTDLL64(), "NtQueryVirtualMemory");
-        if (0 == ntqvm)
-            return 0;
-    }
+        return 0;
+
     DWORD64 ret = 0;
     DWORD64 status = X64Call(ntqvm, 6, PTR_TO_DWORD64(hProcess), lpAddress, (DWORD64)0, PTR_TO_DWORD64(lpBuffer), (DWORD64)dwLength, PTR_TO_DWORD64(&ret));
     if (STATUS_SUCCESS != status)
@@ -675,13 +658,9 @@ SIZE_T __cdecl VirtualQueryEx64(HANDLE hProcess, DWORD64 lpAddress, MEMORY_BASIC
 
 DWORD64 __cdecl VirtualAllocEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect)
 {
-    static DWORD64 ntavm = 0;
+    static DWORD64 ntavm = GetProcAddress64(getNTDLL64(), "NtAllocateVirtualMemory");
     if (0 == ntavm)
-    {
-        ntavm = GetProcAddress64(getNTDLL64(), "NtAllocateVirtualMemory");
-        if (0 == ntavm)
-            return 0;
-    }
+        return 0;
 
     DWORD64 tmpAddr = lpAddress;
     DWORD64 tmpSize = dwSize;
@@ -689,7 +668,7 @@ DWORD64 __cdecl VirtualAllocEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSi
     if (STATUS_SUCCESS != ret)
     {
         SetLastErrorFromX64Call(ret);
-        return FALSE;
+        return 0;
     }
     else
         return tmpAddr;
@@ -697,13 +676,9 @@ DWORD64 __cdecl VirtualAllocEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSi
 
 BOOL __cdecl VirtualFreeEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, DWORD dwFreeType)
 {
-    static DWORD64 ntfvm = 0;
+    static DWORD64 ntfvm = GetProcAddress64(getNTDLL64(), "NtFreeVirtualMemory");
     if (0 == ntfvm)
-    {
-        ntfvm = GetProcAddress64(getNTDLL64(), "NtFreeVirtualMemory");
-        if (0 == ntfvm)
-            return 0;
-    }
+        return FALSE;
 
     DWORD64 tmpAddr = lpAddress;
     DWORD64 tmpSize = dwSize;
@@ -719,13 +694,9 @@ BOOL __cdecl VirtualFreeEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, 
 
 BOOL __cdecl VirtualProtectEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, DWORD flNewProtect, DWORD* lpflOldProtect)
 {
-    static DWORD64 ntpvm = 0;
+    static DWORD64 ntpvm = GetProcAddress64(getNTDLL64(), "NtProtectVirtualMemory");
     if (0 == ntpvm)
-    {
-        ntpvm = GetProcAddress64(getNTDLL64(), "NtProtectVirtualMemory");
-        if (0 == ntpvm)
-            return 0;
-    }
+        return FALSE;
 
     DWORD64 tmpAddr = lpAddress;
     DWORD64 tmpSize = dwSize;
@@ -741,13 +712,10 @@ BOOL __cdecl VirtualProtectEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSiz
 
 BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesRead)
 {
-    static DWORD64 nrvm = 0;
+    static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "NtReadVirtualMemory");
     if (0 == nrvm)
-    {
-        nrvm = GetProcAddress64(getNTDLL64(), "NtReadVirtualMemory");
-        if (0 == nrvm)
-            return 0;
-    }
+        return FALSE;
+
     DWORD64 numOfBytes = lpNumberOfBytesRead ? *lpNumberOfBytesRead : 0;
     DWORD64 ret = X64Call(nrvm, 5, PTR_TO_DWORD64(hProcess), lpBaseAddress, PTR_TO_DWORD64(lpBuffer), (DWORD64)nSize, PTR_TO_DWORD64(&numOfBytes));
     if (STATUS_SUCCESS != ret)
@@ -765,13 +733,10 @@ BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID 
 
 BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten)
 {
-    static DWORD64 nrvm = 0;
+    static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "NtWriteVirtualMemory");
     if (0 == nrvm)
-    {
-        nrvm = GetProcAddress64(getNTDLL64(), "NtWriteVirtualMemory");
-        if (0 == nrvm)
-            return 0;
-    }
+        return FALSE;
+
     DWORD64 numOfBytes = lpNumberOfBytesWritten ? *lpNumberOfBytesWritten : 0;
     DWORD64 ret = X64Call(nrvm, 5, PTR_TO_DWORD64(hProcess), lpBaseAddress, PTR_TO_DWORD64(lpBuffer), (DWORD64)nSize, PTR_TO_DWORD64(&numOfBytes));
     if (STATUS_SUCCESS != ret)
@@ -789,13 +754,10 @@ BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID
 
 BOOL __cdecl GetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
 {
-    static DWORD64 gtc = 0;
+    static DWORD64 gtc = GetProcAddress64(getNTDLL64(), "NtGetContextThread");
     if (0 == gtc)
-    {
-        gtc = GetProcAddress64(getNTDLL64(), "NtGetContextThread");
-        if (0 == gtc)
-            return 0;
-    }
+        return FALSE;
+
     DWORD64 ret = X64Call(gtc, 2, PTR_TO_DWORD64(hThread), PTR_TO_DWORD64(lpContext));
     if (STATUS_SUCCESS != ret)
     {
@@ -808,13 +770,10 @@ BOOL __cdecl GetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
 
 BOOL __cdecl SetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
 {
-    static DWORD64 stc = 0;
+    static DWORD64 stc = GetProcAddress64(getNTDLL64(), "NtSetContextThread");
     if (0 == stc)
-    {
-        stc = GetProcAddress64(getNTDLL64(), "NtSetContextThread");
-        if (0 == stc)
-            return 0;
-    }
+        return FALSE;
+
     DWORD64 ret = X64Call(stc, 2, PTR_TO_DWORD64(hThread), PTR_TO_DWORD64(lpContext));
     if (STATUS_SUCCESS != ret)
     {
@@ -827,13 +786,10 @@ BOOL __cdecl SetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
 
 DWORD64 __cdecl LoadLibraryW64(LPCWSTR lpLibFileName)
 {
-    static DWORD64 ldrLoadDll = 0;
+    static DWORD64 ldrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
     if (0 == ldrLoadDll)
-    {
-        ldrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
-        if (0 == ldrLoadDll)
-            return 0;
-    }
+        return 0;
+
     _UNICODE_STRING_T<DWORD64> szDll = { 0 };
     szDll.Buffer = PTR_TO_DWORD64(lpLibFileName);
     szDll.Length = (WORD)(wcslen(lpLibFileName) * sizeof(WCHAR));
@@ -869,17 +825,14 @@ NTSTATUS WINAPI RtlCreateUserThread(
     CLIENT_ID* pResult);
 */
 
-DWORD64 __cdecl MyCreateRemoteThread64(DWORD64 hProcess, DWORD64 remote_addr, DWORD64 thread_arg)
+DWORD64 __cdecl CreateRemoteThread64(DWORD64 hProcess, DWORD64 remote_addr, DWORD64 thread_arg)
 {
-    static DWORD64 nrvm = 0;
+    static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "RtlCreateUserThread");
+    if (0 == nrvm)
+        return 0;
+
     CLIENT_ID cid = { 0 };
     DWORD64 thread_handle = 0;
-    if (0 == nrvm)
-    {
-        nrvm = GetProcAddress64(getNTDLL64(), "RtlCreateUserThread");
-        if (0 == nrvm)
-            return 0;
-    }
 
     DWORD64 ret = X64Call(nrvm, 10,
         hProcess,
@@ -904,13 +857,9 @@ DWORD64 __cdecl MyCreateRemoteThread64(DWORD64 hProcess, DWORD64 remote_addr, DW
 
 BOOL __cdecl CloseHandle64(DWORD64 Handle)
 {
-    static DWORD64 nrvm = 0;
+    static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "NtClose");
     if (0 == nrvm)
-    {
-        nrvm = GetProcAddress64(getNTDLL64(), "NtClose");
-        if (0 == nrvm)
-            return 0;
-    }
+        return FALSE;
 
     DWORD64 ret = X64Call(nrvm, 1, Handle);
     if (STATUS_SUCCESS != ret)
@@ -922,15 +871,11 @@ BOOL __cdecl CloseHandle64(DWORD64 Handle)
         return TRUE;
 }
 
-BOOL __cdecl MyNtQueueApcThread64(DWORD64 ThreadHandle, DWORD64 ApcDispatchRoutine, DWORD64 SystemArgument1, DWORD64 SystemArgument2, DWORD64 SystemArgument3)
+BOOL __cdecl NtQueueApcThread64(DWORD64 ThreadHandle, DWORD64 ApcDispatchRoutine, DWORD64 SystemArgument1, DWORD64 SystemArgument2, DWORD64 SystemArgument3)
 {
-    static DWORD64 nrvm = 0;
+    static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "NtQueueApcThread");
     if (0 == nrvm)
-    {
-        nrvm = GetProcAddress64(getNTDLL64(), "NtQueueApcThread");
-        if (0 == nrvm)
-            return 0;
-    }
+        return FALSE;
 
     DWORD64 ret = X64Call(nrvm, 5,
         ThreadHandle,

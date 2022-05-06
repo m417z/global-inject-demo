@@ -152,9 +152,9 @@ BOOL __cdecl GetThreadContext64(HANDLE hThread, struct _CONTEXT64* lpContext);
 BOOL __cdecl SetThreadContext64(HANDLE hThread, struct _CONTEXT64* lpContext);
 VOID __cdecl SetLastErrorFromX64Call(DWORD64 status);
 DWORD64 __cdecl LoadLibraryW64(LPCWSTR lpLibFileName);
-DWORD64 __cdecl MyCreateRemoteThread64(DWORD64 hProcess, DWORD64 remote_addr, DWORD64 thread_arg);
+DWORD64 __cdecl CreateRemoteThread64(DWORD64 hProcess, DWORD64 remote_addr, DWORD64 thread_arg);
 BOOL __cdecl CloseHandle64(DWORD64 Handle);
-BOOL __cdecl MyNtQueueApcThread64(DWORD64 ThreadHandle, DWORD64 ApcDispatchRoutine, DWORD64 SystemArgument1, DWORD64 SystemArgument2, DWORD64 SystemArgument3);
+BOOL __cdecl NtQueueApcThread64(DWORD64 ThreadHandle, DWORD64 ApcDispatchRoutine, DWORD64 SystemArgument1, DWORD64 SystemArgument2, DWORD64 SystemArgument3);
 
 #ifdef __cplusplus
 }
