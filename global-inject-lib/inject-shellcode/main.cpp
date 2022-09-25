@@ -190,7 +190,7 @@ typedef struct __PEB // 65 elements, 0x210 bytes
 } _PEB, * _PPEB;
 
 __declspec(dllexport)
-BOOL __stdcall InjectShellcode(void* pParameter)
+void* __stdcall InjectShellcode(void* pParameter)
 {
 	DllInject::LOAD_LIBRARY_REMOTE_DATA* pInjData = (DllInject::LOAD_LIBRARY_REMOTE_DATA*)pParameter;
 	HMODULE hModule;
@@ -357,11 +357,9 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 		pleInLoadIter = pleInLoadIter->Flink;
 	}
 
-	pInjData->pVirtualFree = pVirtualFree;
-
 	if (!pLoadLibraryW || !pGetProcAddress || !pFreeLibrary || !pVirtualFree || !pGetLastError || !pOutputDebugStringA || !pCloseHandle || !pSetThreadErrorMode)
 	{
-		return FALSE;
+		return pVirtualFree;
 	}
 
 	INT32 nLogVerbosity = pInjData->nLogVerbosity;
@@ -406,7 +404,7 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 
 			if (nLogVerbosity >= 2)
 			{
-				char szInjectInitResultMessage[] = { '[', 'W', 'H', ']', ' ', 'I', 'I', ':', ' ', bInitSucceeded ? '1' : '0', '\n', '\0'};
+				char szInjectInitResultMessage[] = { '[', 'W', 'H', ']', ' ', 'I', 'I', ':', ' ', bInitSucceeded ? '1' : '0', '\n', '\0' };
 				pOutputDebugStringA(szInjectInitResultMessage);
 			}
 		}
@@ -434,7 +432,7 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 		if (!bInitAttempted && nLogVerbosity >= 1)
 		{
 			char szLastErrorMessage[] = { '[', 'W', 'H', ']', ' ', 'E', 'R', 'R', ':', ' ', '1', '1', '1', '1', '1', '1', '1', '1', '\n', '\0' };
-			char *pHex = szLastErrorMessage + sizeof(szLastErrorMessage) - 2;
+			char* pHex = szLastErrorMessage + sizeof(szLastErrorMessage) - 2;
 
 			for (int i = 0; i < 8; i++)
 			{
@@ -461,7 +459,7 @@ BOOL __stdcall InjectShellcode(void* pParameter)
 
 	pSetThreadErrorMode(dwOldMode, NULL);
 
-	return bInitSucceeded;
+	return pVirtualFree;
 }
 
 int CALLBACK wWinMain(

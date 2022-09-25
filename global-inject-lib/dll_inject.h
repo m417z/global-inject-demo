@@ -6,11 +6,6 @@ namespace DllInject
 		PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | SYNCHRONIZE;
 
 	struct LOAD_LIBRARY_REMOTE_DATA {
-		// pVirtualFree must be first in the struct.
-		union {
-			void* pVirtualFree;
-			DWORD64 dw64VirtualFree; // make sure 32-bit/64-bit layouts are the same
-		};
 		INT32 nLogVerbosity;
 		BOOL bRunningFromAPC;
 		union {
