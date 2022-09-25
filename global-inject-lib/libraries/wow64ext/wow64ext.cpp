@@ -453,7 +453,7 @@ _move_0:                            ;//
     }
 }
 
-static bool cmpMem64(void* dstMem, DWORD64 srcMem, size_t sz)
+static bool cmpMem64(const void* dstMem, DWORD64 srcMem, size_t sz)
 {
     if ((nullptr == dstMem) || (0 == srcMem) || (0 == sz))
         return false;
@@ -524,7 +524,7 @@ static DWORD64 getTEB64()
     return reg.v;
 }
 
-DWORD64 __cdecl GetModuleHandle64(wchar_t* lpModuleName)
+DWORD64 __cdecl GetModuleHandle64(const wchar_t* lpModuleName)
 {
     if (!g_isWow64)
         return 0;
@@ -628,7 +628,7 @@ VOID __cdecl SetLastErrorFromX64Call(DWORD64 status)
     }
 }
 
-DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, char* funcName)
+DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, const char* funcName)
 {
     static DWORD64 _LdrGetProcedureAddress = getLdrGetProcedureAddress();
     if (0 == _LdrGetProcedureAddress)
@@ -710,7 +710,7 @@ BOOL __cdecl VirtualProtectEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSiz
         return TRUE;
 }
 
-BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesRead)
+BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesRead)
 {
     static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "NtReadVirtualMemory");
     if (0 == nrvm)
@@ -731,7 +731,7 @@ BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID 
     }
 }
 
-BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten)
+BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten)
 {
     static DWORD64 nrvm = GetProcAddress64(getNTDLL64(), "NtWriteVirtualMemory");
     if (0 == nrvm)
@@ -768,7 +768,7 @@ BOOL __cdecl GetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
         return TRUE;
 }
 
-BOOL __cdecl SetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
+BOOL __cdecl SetThreadContext64(HANDLE hThread, const _CONTEXT64* lpContext)
 {
     static DWORD64 stc = GetProcAddress64(getNTDLL64(), "NtSetContextThread");
     if (0 == stc)
