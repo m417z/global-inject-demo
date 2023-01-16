@@ -102,10 +102,14 @@ void AllProcessesInjector::InjectIntoNewProcess(HANDLE hProcess, DWORD dwProcess
 	// before the parent process notified csrss.exe (KERNELBASE!CsrClientCallServer),
 	// csrss.exe returns an access denied error and the parent's CreateProcess
 	// call fails.
+	//
+	// If the process is the current process, we skip this check since it
+	// obviously began running, and we don't want to suspend the current thread
+	// and cause a deadlock.
 
 	wil::unique_process_handle suspendedThread;
 
-	{
+	if (dwProcessId != GetCurrentProcessId()) {
 		DWORD processAccess = THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | DllInject::ProcessAccess;
 
 		wil::unique_process_handle thread1;
