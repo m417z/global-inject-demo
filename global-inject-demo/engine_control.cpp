@@ -1,39 +1,10 @@
 #include "stdafx.h"
 #include "engine_control.h"
-
-namespace
-{
-	std::filesystem::path GetEnginePath()
-	{
-		// Use current architecture.
-#ifdef _WIN64
-		USHORT machine = IMAGE_FILE_MACHINE_AMD64;
-#else // !_WIN64
-		USHORT machine = IMAGE_FILE_MACHINE_I386;
-#endif // _WIN64
-
-		PCWSTR folderName;
-		switch (machine) {
-		case IMAGE_FILE_MACHINE_I386:
-			folderName = L"32";
-			break;
-
-		case IMAGE_FILE_MACHINE_AMD64:
-			folderName = L"64";
-			break;
-
-		default:
-			throw std::logic_error("Unknown architecture");
-		}
-
-		std::filesystem::path modulePath = wil::GetModuleFileName<std::wstring>();
-		return modulePath.parent_path() / folderName;
-	}
-}
+#include "functions.h"
 
 EngineControl::EngineControl()
 {
-	auto engineLibraryPath = GetEnginePath() / L"global-inject-lib.dll";
+	auto engineLibraryPath = GetEnginePath() / GetDllFileName();
 
 	engineModule.reset(LoadLibrary(engineLibraryPath.c_str()));
 	THROW_LAST_ERROR_IF_NULL(engineModule);
