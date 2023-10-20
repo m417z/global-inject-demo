@@ -9,9 +9,7 @@
 #include <wil/result.h>
 #include <wil/win32_helpers.h>
 
-BOOL GetFullAccessSecurityDescriptor(
-	_Outptr_ PSECURITY_DESCRIPTOR* SecurityDescriptor,
-	_Out_opt_ PULONG SecurityDescriptorSize)
+BOOL GetFullAccessSecurityDescriptor(_Outptr_ PSECURITY_DESCRIPTOR* SecurityDescriptor, _Out_opt_ PULONG SecurityDescriptorSize)
 {
 	// http://rsdn.org/forum/winapi/7510772.flat
 	//
@@ -116,52 +114,50 @@ std::filesystem::path GetDllFileName()
 	return result;
 }
 
-	//
-	// https://docs.microsoft.com/en-us/windows/win32/sysinfo/verifying-the-system-version
-	//
-	BOOL CheckWindowsVersion(DWORD dwMajorVersion, DWORD dwMinorVersion,
-		WORD wServicePackMajor, WORD wServicePackMinor, int op)
-	{
-		// Initialize the OSVERSIONINFOEX structure
-		OSVERSIONINFOEX osvi;
+//
+// https://docs.microsoft.com/en-us/windows/win32/sysinfo/verifying-the-system-version
+//
+BOOL CheckWindowsVersion(DWORD dwMajorVersion, DWORD dwMinorVersion, WORD wServicePackMajor, WORD wServicePackMinor, int op)
+{
+	// Initialize the OSVERSIONINFOEX structure
+	OSVERSIONINFOEX osvi;
 
-		ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-		osvi.dwMajorVersion = dwMajorVersion;
-		osvi.dwMinorVersion = dwMinorVersion;
-		osvi.wServicePackMajor = wServicePackMajor;
-		osvi.wServicePackMinor = wServicePackMinor;
+	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+	osvi.dwMajorVersion = dwMajorVersion;
+	osvi.dwMinorVersion = dwMinorVersion;
+	osvi.wServicePackMajor = wServicePackMajor;
+	osvi.wServicePackMinor = wServicePackMinor;
 
-		// Initialize the type mask
-		DWORD dwTypeMask = VER_MAJORVERSION | VER_MINORVERSION |
-			VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR;
+	// Initialize the type mask
+	DWORD dwTypeMask = VER_MAJORVERSION | VER_MINORVERSION |
+		VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR;
 
-		// Initialize the condition mask
-		DWORDLONG dwlConditionMask = 0;
+	// Initialize the condition mask
+	DWORDLONG dwlConditionMask = 0;
 
-		VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, op);
-		VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, op);
-		VER_SET_CONDITION(dwlConditionMask, VER_SERVICEPACKMAJOR, op);
-		VER_SET_CONDITION(dwlConditionMask, VER_SERVICEPACKMINOR, op);
+	VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, op);
+	VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, op);
+	VER_SET_CONDITION(dwlConditionMask, VER_SERVICEPACKMAJOR, op);
+	VER_SET_CONDITION(dwlConditionMask, VER_SERVICEPACKMINOR, op);
 
-		// Perform the test
-		return VerifyVersionInfo(&osvi, dwTypeMask, dwlConditionMask);
-	}
+	// Perform the test
+	return VerifyVersionInfo(&osvi, dwTypeMask, dwlConditionMask);
+}
 
 //
 // Based on:
 // http://securityxploded.com/ntcreatethreadex.php
 //
-HANDLE MyCreateRemoteThread(HANDLE hProcess,
-	LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, USHORT targetProcessArch)
+HANDLE MyCreateRemoteThread(HANDLE hProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, USHORT targetProcessArch)
 {
-#ifndef _WIN64
+	#ifndef _WIN64
 	if (targetProcessArch == IMAGE_FILE_MACHINE_AMD64) {
 		// WOW64 to x64 native, use heaven's gate.
 		return (HANDLE)CreateRemoteThread64(
 			HANDLE_TO_DWORD64(hProcess), PTR_TO_DWORD64(lpStartAddress), PTR_TO_DWORD64(lpParameter));
 	}
-#endif // _WIN64
+	#endif // _WIN64
 
 	using NtCreateThreadEx_t = NTSTATUS(WINAPI*)(
 		OUT PHANDLE hThread,
@@ -235,7 +231,7 @@ ULONG64 EncodeWow64ApcRoutine(ULONG64 ApcRoutine)
 //
 BOOL MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData, USHORT targetProcessArch)
 {
-#ifndef _WIN64
+	#ifndef _WIN64
 	if (targetProcessArch == IMAGE_FILE_MACHINE_AMD64) {
 		// WOW64 to x64 native, use heaven's gate.
 		//
@@ -247,7 +243,7 @@ BOOL MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData, USHORT ta
 		return NtQueueApcThread64(
 			HANDLE_TO_DWORD64(hThread), PTR_TO_DWORD64(pfnAPC), (DWORD64)dwData, 0, 0);
 	}
-#endif // _WIN64
+	#endif // _WIN64
 
 	using NtQueueApcThread_t = DWORD(WINAPI*)(
 		IN HANDLE ThreadHandle,
@@ -271,12 +267,12 @@ BOOL MyQueueUserAPC(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData, USHORT ta
 		return FALSE;
 	}
 
-#ifdef _WIN64
+	#ifdef _WIN64
 	if (targetProcessArch == IMAGE_FILE_MACHINE_I386) {
 		// x64 native to WOW64, encode address.
 		pfnAPC = (PAPCFUNC)EncodeWow64ApcRoutine((ULONG64)pfnAPC);
 	}
-#endif // _WIN64
+	#endif // _WIN64
 
 	NTSTATUS result = pNtQueueApcThread(hThread, pfnAPC, dwData, 0, 0);
 	if (result < 0) {
@@ -292,14 +288,14 @@ USHORT GetProcessArch(HANDLE hProcess)
 	// For now, only IMAGE_FILE_MACHINE_I386 and IMAGE_FILE_MACHINE_AMD64.
 	// TODO: Use IsWow64Process2 if available.
 
-#ifndef _WIN64
+	#ifndef _WIN64
 	SYSTEM_INFO siSystemInfo;
 	GetNativeSystemInfo(&siSystemInfo);
 	if (siSystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) {
 		// 32-bit machine, only one option.
 		return IMAGE_FILE_MACHINE_I386;
 	}
-#endif // _WIN64
+	#endif // _WIN64
 
 	BOOL bIsWow64Process;
 	if (IsWow64Process(hProcess, &bIsWow64Process) && bIsWow64Process) {
