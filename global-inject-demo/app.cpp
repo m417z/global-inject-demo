@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "functions.h"
 #include "engine_control.h"
+#include "common_functions.h"
 
 int main()
 {

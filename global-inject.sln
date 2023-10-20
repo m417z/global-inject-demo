@@ -3,7 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "global-inject-demo", "global-inject-demo\global-inject-demo.vcxproj", "{60B5B785-FD1C-4961-8261-C80C1814670C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "global-inject-demo", "global-inject-demo\global-inject-demo.vcxproj", "{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{16DD1B11-BB29-4015-8BFD-AACD0AF63A79} = {16DD1B11-BB29-4015-8BFD-AACD0AF63A79}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "global-inject-lib", "global-inject-lib\global-inject-lib.vcxproj", "{16DD1B11-BB29-4015-8BFD-AACD0AF63A79}"
 EndProject
@@ -15,14 +18,14 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Debug|Win32.Build.0 = Debug|Win32
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Debug|x64.ActiveCfg = Debug|x64
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Debug|x64.Build.0 = Debug|x64
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Release|Win32.ActiveCfg = Release|Win32
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Release|Win32.Build.0 = Release|Win32
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Release|x64.ActiveCfg = Release|x64
-		{60B5B785-FD1C-4961-8261-C80C1814670C}.Release|x64.Build.0 = Release|x64
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Debug|Win32.Build.0 = Debug|Win32
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Debug|x64.ActiveCfg = Debug|x64
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Debug|x64.Build.0 = Debug|x64
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Release|Win32.ActiveCfg = Release|Win32
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Release|Win32.Build.0 = Release|Win32
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Release|x64.ActiveCfg = Release|x64
+		{0F288B9E-2D98-4728-8C40-CD5C1D1A95FD}.Release|x64.Build.0 = Release|x64
 		{16DD1B11-BB29-4015-8BFD-AACD0AF63A79}.Debug|Win32.ActiveCfg = Debug|Win32
 		{16DD1B11-BB29-4015-8BFD-AACD0AF63A79}.Debug|Win32.Build.0 = Debug|Win32
 		{16DD1B11-BB29-4015-8BFD-AACD0AF63A79}.Debug|x64.ActiveCfg = Debug|x64

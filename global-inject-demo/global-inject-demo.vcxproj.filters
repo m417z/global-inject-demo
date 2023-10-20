@@ -13,6 +13,9 @@
       <UniqueIdentifier>{c9908b8c-b610-454b-9f8a-fd6afc7f6daa}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest</Extensions>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{c45cc86a-3c01-42b2-867d-f4a5454beff5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -24,8 +27,8 @@
     <ClCompile Include="engine_control.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="functions.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\shared\common_functions.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +40,9 @@
     </ClInclude>
     <ClInclude Include="functions.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\common_functions.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

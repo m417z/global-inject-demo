@@ -16,11 +16,11 @@
     <Filter Include="Libraries">
       <UniqueIdentifier>{dbc84a6d-1bd2-44c1-8485-a0ca8231f2c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{78e47aa4-0b80-4638-9d0d-13ec7ca553a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="new_process_injector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,6 +48,12 @@
     <ClCompile Include="session_private_namespace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\common_functions.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dll_inject.h">
@@ -62,9 +68,6 @@
     <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="functions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="customization_session.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -73,6 +76,12 @@
     </ClInclude>
     <ClInclude Include="session_private_namespace.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\common_functions.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
