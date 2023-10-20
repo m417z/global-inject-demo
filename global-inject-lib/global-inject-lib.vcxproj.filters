@@ -48,7 +48,10 @@
     <ClCompile Include="session_private_namespace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\common\functions.cpp">
+    <ClCompile Include="functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\common_functions.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,7 +77,10 @@
     <ClInclude Include="session_private_namespace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\common\functions.h">
+    <ClInclude Include="functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\common_functions.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

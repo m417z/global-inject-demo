@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "engine_control.h"
-#include "functions.h"
+#include "common_functions.h"
 
 EngineControl::EngineControl()
 {
